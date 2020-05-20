@@ -7,16 +7,18 @@
 #include <unistd.h>
 #include <string.h>
 #include "dieError.h"
+#define BUFFSIZE 2048 // buff size for read routine
 
 int main(int argc, char *argv[])
 {
 
     int readval;                                             //read value sent from the server side
     char *fileName = "Constitution.txt";                     //pointer to hold the specific file being requested from the server
-    char buffer[1024] = {0};                                 //buffer to hold the contents of the file sent from the server
+    char buffer[128] = {0};                                 //buffer to hold the contents of the file sent from the server
     int cSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP); //client socket variable created
     struct sockaddr_in server_add;                           //Hold the address elements in the struct sockaddr_in
     char *userName = "";
+    char *user = (char*)malloc(sizeof(char*));
 
     if (cSocket < 0) //Returns -1 if client socekt creation fails
     {
@@ -38,16 +40,31 @@ int main(int argc, char *argv[])
     scanf("%s", userName);
     
     send(cSocket, userName, strlen(userName), 0); //Send user name to server
-    prinf("Submitting username to server...\n\n");
+    printf("Submitting username to server...\n\n");
 
 
     /*send(cSocket, fileName, strlen(fileName), 0); //Send data requesting for the specific file from the server
-    printf("Establishing a connection...\n\n");
+    printf("Establishing a connection...\n\n");*/
 
-    readval = read(cSocket, buffer, 1024); //Read the server's response and put into the buffer
-    printf("%s\n", buffer);
-    printf("The number of bytes received is: %lu bytes\n", strlen(buffer)); //length of the contents of the file*/
+    readval = read(cSocket, buffer, sizeof(buffer)/sizeof(buffer[0])); //Read the server's response and put into the buffer
+    printf("\nThe users online are: %s\n", buffer);
 
+    printf("Enter the full name (no characters) of the user you want to connect with:  ");
+    scanf("%s", user);
+
+    char *userSelected = strstr(buffer, user);
+    if (userSelected != NULL) /* Substring found */
+	{
+		printf("'%s' is selected\n", user);
+    send(cSocket, user, strlen(user), 0); //Send user name to server
+    printf("Submitting username to server...\n\n");
+
+	}
+	else /* Substring not found */
+	{
+		printf("'%s' is not among the users: ",user);
+	}
+   
     return 0;
 
     close(cSocket);
